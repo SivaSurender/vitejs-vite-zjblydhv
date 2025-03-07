@@ -83,12 +83,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add .
-
-          if git diff --staged --quiet; then
-            echo "✅ No changes to commit."
-            exit 0
-          fi
-
-          echo "📌 Committing token-based style updates..."
-          git commit -m "Update token-based styles"
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update token-based styles"
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/SivaSurender/vitejs-vite-zjblydhv.git HEAD:main
