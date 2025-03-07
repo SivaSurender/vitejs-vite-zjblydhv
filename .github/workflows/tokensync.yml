@@ -78,26 +78,55 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          # Ensure build directory exists before proceeding
-          mkdir -p packages/brandA/build/css
+          # Ensure we are on the latest main branch
+          git fetch origin main
+          git checkout main
 
-          # Check if build output exists and add only if files are present
-          if [ -f "packages/brandA/build/css/variables.css" ]; then
-            git add -f packages/brandA/build/css/variables.css
-          else
-            echo "⚠️ No build output found. Skipping commit."
+          # Detect changed workspaces from the last commit
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+          BUILD_LIST=""
+
+          for FILE in $CHANGED_FILES; do
+            if [[ $FILE == packages/*/tokens/token.json ]]; then
+              WORKSPACE=$(echo $FILE | cut -d'/' -f2)
+              BUILD_LIST+=" packages/$WORKSPACE"
+            fi
+          done
+
+          # Remove duplicates
+          BUILD_LIST=$(echo $BUILD_LIST | tr ' ' '\n' | sort -u | tr '\n' ' ')
+
+          echo "📂 Workspaces to build: $BUILD_LIST"
+
+          if [ -z "$BUILD_LIST" ]; then
+            echo "✅ No token changes detected. Skipping build."
             exit 0
           fi
 
-          # Check if there are staged changes before committing
+          # Ensure all detected workspaces have their build directories
+          for DIR in $BUILD_LIST; do
+            mkdir -p "$DIR/build/css"
+          done
+
+          # Stage only valid build outputs
+          for DIR in $BUILD_LIST; do
+            if [ -f "$DIR/build/css/variables.css" ]; then
+              git add -f "$DIR/build/css/variables.css"
+            else
+              echo "⚠️ No build output found for $DIR. Skipping."
+            fi
+          done
+
+          # Check if there are any staged changes before committing
           if git diff --staged --quiet; then
             echo "✅ No changes to commit."
-          else
-            git commit -m "Update token-based styles"
+            exit 0
           fi
 
-          # Pull latest changes safely before pushing
+          # Safe pull before push to prevent conflicts
           git pull --rebase --autostash origin main
 
-          # Push the committed changes
+          # Commit all changes dynamically
+          git commit -m "Update token-based styles"
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/SivaSurender/vitejs-vite-zjblydhv.git HEAD:main
