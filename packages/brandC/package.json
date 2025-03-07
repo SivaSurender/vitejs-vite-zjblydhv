@@ -1,0 +1,12 @@
+{
+  "name": "brandC",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx style-dictionary build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

@@ -1,0 +1,9 @@
+{
+  "name": "monorepo-tokens",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "version": "1.0.0",
+  "devDependencies": {
+    "style-dictionary": "^4.3.3"
+  }
+}
