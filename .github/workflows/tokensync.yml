@@ -78,18 +78,26 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          # Check and add only if files are modified
-          git status
-          git add -f packages/brandA/build/css/variables.css
-          
+          # Ensure build directory exists before proceeding
+          mkdir -p packages/brandA/build/css
+
+          # Check if build output exists and add only if files are present
+          if [ -f "packages/brandA/build/css/variables.css" ]; then
+            git add -f packages/brandA/build/css/variables.css
+          else
+            echo "⚠️ No build output found. Skipping commit."
+            exit 0
+          fi
+
+          # Check if there are staged changes before committing
           if git diff --staged --quiet; then
             echo "✅ No changes to commit."
           else
             git commit -m "Update token-based styles"
           fi
-          
-          # Pull latest changes safely
+
+          # Pull latest changes safely before pushing
           git pull --rebase --autostash origin main
-          
-          # Push the changes after rebasing
+
+          # Push the committed changes
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/SivaSurender/vitejs-vite-zjblydhv.git HEAD:main
