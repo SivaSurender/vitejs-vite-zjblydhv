@@ -40,16 +40,16 @@ jobs:
 
           BUILD_LIST=""
 
-          if echo "$CHANGED_FILES" | grep -q 'packages/base/tokens.json'; then
+          if echo "$CHANGED_FILES" | grep -q 'packages/base/tokens/token.json'; then
             BUILD_LIST+=" packages/base"
           fi
-          if echo "$CHANGED_FILES" | grep -q 'packages/brandA/tokens.json'; then
+          if echo "$CHANGED_FILES" | grep -q 'packages/brandA/tokens/token.json'; then
             BUILD_LIST+=" packages/brandA"
           fi
-          if echo "$CHANGED_FILES" | grep -q 'packages/brandB/tokens.json'; then
+          if echo "$CHANGED_FILES" | grep -q 'packages/brandB/tokens/token.json'; then
             BUILD_LIST+=" packages/brandB"
           fi
-          if echo "$CHANGED_FILES" | grep -q 'packages/brandC/tokens.json'; then
+          if echo "$CHANGED_FILES" | grep -q 'packages/brandC/tokens/token.json'; then
             BUILD_LIST+=" packages/brandC"
           fi
 
