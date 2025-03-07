@@ -1,0 +1,93 @@
+name: Token Sync & Publish
+
+on:
+  push:
+    paths:
+      - "packages/base/tokens.json"
+      - "packages/brandA/tokens.json"
+      - "packages/brandB/tokens.json"
+      - "packages/brandC/tokens.json"
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  update-tokens:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Fetch previous commit history for proper diffing
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Detect Changed Tokens and Build
+        id: detect-changes
+        run: |
+          git fetch origin main  # Ensure we have the latest changes
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)  # Compare against the last commit
+
+          echo "🔍 Changed files:"
+          echo "$CHANGED_FILES"
+
+          BUILD_LIST=""
+
+          if echo "$CHANGED_FILES" | grep -q 'packages/base/tokens.json'; then
+            BUILD_LIST+=" packages/base"
+          fi
+          if echo "$CHANGED_FILES" | grep -q 'packages/brandA/tokens.json'; then
+            BUILD_LIST+=" packages/brandA"
+          fi
+          if echo "$CHANGED_FILES" | grep -q 'packages/brandB/tokens.json'; then
+            BUILD_LIST+=" packages/brandB"
+          fi
+          if echo "$CHANGED_FILES" | grep -q 'packages/brandC/tokens.json'; then
+            BUILD_LIST+=" packages/brandC"
+          fi
+
+          echo "BUILD_LIST=$BUILD_LIST" >> $GITHUB_ENV
+
+      - name: Run Style Dictionary Build for Changed Workspaces
+        run: |
+          echo "📂 Workspaces to build: $BUILD_LIST"
+
+          if [ -z "$BUILD_LIST" ]; then
+            echo "✅ No token changes detected. Skipping build."
+            exit 0
+          fi
+
+          for DIR in $BUILD_LIST; do
+            echo "🚀 Building tokens for $DIR..."
+            npm run build --workspace=$DIR
+
+            # Ensure build folder exists
+            if [ ! -d "$DIR/build" ]; then
+              echo "⚠️ Build folder not found, creating $DIR/build..."
+              mkdir -p "$DIR/build"
+            fi
+          done
+
+      - name: Commit and Push Changes
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .
+
+          if git diff --staged --quiet; then
+            echo "✅ No changes to commit."
+            exit 0
+          fi
+
+          echo "📌 Committing token-based style updates..."
+          git commit -m "Update token-based styles"
+          git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/SivaSurender/vitejs-vite-zjblydhv.git HEAD:main
