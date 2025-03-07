@@ -3,10 +3,10 @@ name: Token Sync & Publish
 on:
   push:
     paths:
-      - "packages/base/tokens.json"
-      - "packages/brandA/tokens.json"
-      - "packages/brandB/tokens.json"
-      - "packages/brandC/tokens.json"
+      - "packages/base/tokens/token.json"
+      - "packages/brandA/tokens/token.json"
+      - "packages/brandB/tokens/token.json"
+      - "packages/brandC/tokens/token.json"
     branches:
       - main
   workflow_dispatch:
