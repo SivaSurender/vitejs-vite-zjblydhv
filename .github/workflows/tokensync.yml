@@ -56,10 +56,9 @@ jobs:
 
           echo "BUILD_LIST=$BUILD_LIST" >> $GITHUB_ENV
 
-      - name: Run Style Dictionary Build for Changed Workspaces
+      - name: Run Style Dictionary Build
         run: |
           echo "📂 Workspaces to build: $BUILD_LIST"
-
           if [ -z "$BUILD_LIST" ]; then
             echo "✅ No token changes detected. Skipping build."
             exit 0
@@ -67,14 +66,21 @@ jobs:
 
           for DIR in $BUILD_LIST; do
             echo "🚀 Building tokens for $DIR..."
+            rm -rf "$DIR/build/*"  # Clear old build
             npm run build --workspace=$DIR
-
-            # Ensure build folder exists
-            if [ ! -d "$DIR/build" ]; then
-              echo "⚠️ Build folder not found, creating $DIR/build..."
-              mkdir -p "$DIR/build"
-            fi
+            git add -f "$DIR/build/css/variables.css"  # Force track build output
           done
+      - name: Check for Changes & Push
+        run: |
+          git status
+          git diff
+          git add .
+          if git diff --staged --quiet; then
+            echo "✅ No changes to commit."
+            exit 0
+          fi
+          git commit -m "Update token-based styles"
+          git push origin main
 
       - name: Commit and Push Changes
         env:
