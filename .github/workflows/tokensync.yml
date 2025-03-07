@@ -70,11 +70,16 @@ jobs:
             npm run build --workspace=$DIR
             git add -f "$DIR/build/css/variables.css"  # Force track build output
           done
-      - name: Check for Changes & Push
+
+      - name: Commit and Push Changes
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           
+          git pull --rebase origin main # Ensure latest changes
+
           git status
           git diff
           git add .
@@ -85,14 +90,4 @@ jobs:
           fi
           
           git commit -m "Update token-based styles"
-          git push origin main
-
-      - name: Commit and Push Changes
-        env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git add .
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update token-based styles"
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/SivaSurender/vitejs-vite-zjblydhv.git HEAD:main
