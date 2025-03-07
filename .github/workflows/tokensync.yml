@@ -77,17 +77,19 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          
-          git pull --rebase origin main # Ensure latest changes
 
+          # Check and add only if files are modified
           git status
-          git diff
-          git add .
+          git add -f packages/brandA/build/css/variables.css
           
           if git diff --staged --quiet; then
             echo "✅ No changes to commit."
-            exit 0
+          else
+            git commit -m "Update token-based styles"
           fi
           
-          git commit -m "Update token-based styles"
+          # Pull latest changes safely
+          git pull --rebase --autostash origin main
+          
+          # Push the changes after rebasing
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/SivaSurender/vitejs-vite-zjblydhv.git HEAD:main
