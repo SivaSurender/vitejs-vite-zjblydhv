@@ -72,13 +72,18 @@ jobs:
           done
       - name: Check for Changes & Push
         run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          
           git status
           git diff
           git add .
+          
           if git diff --staged --quiet; then
             echo "✅ No changes to commit."
             exit 0
           fi
+          
           git commit -m "Update token-based styles"
           git push origin main
 
