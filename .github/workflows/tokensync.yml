@@ -136,3 +136,25 @@ jobs:
           # Commit all changes dynamically
           git commit -m "Update token-based styles"
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/SivaSurender/vitejs-vite-zjblydhv.git HEAD:main
+
+  deploy:
+    needs: update-tokens
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: packages/
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
